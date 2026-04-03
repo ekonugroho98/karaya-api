@@ -6,7 +6,7 @@
     }
   ],
   "functions": {
-    "api/gold/antam.js": {
+    "api/gold/[brand].js": {
       "memory": 1024,
       "maxDuration": 60
     },
