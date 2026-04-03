@@ -1,0 +1,18 @@
+{
+  "crons": [
+    {
+      "path": "/api/gold/antam",
+      "schedule": "30 1 * * *"
+    }
+  ],
+  "functions": {
+    "api/gold/antam.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/gold/index.js": {
+      "memory": 256,
+      "maxDuration": 10
+    }
+  }
+}

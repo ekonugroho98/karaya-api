@@ -1,0 +1,14 @@
+{
+  "name": "karaya-api",
+  "version": "1.0.0",
+  "description": "Karaya gold price API — serverless backend on Vercel",
+  "private": true,
+  "engines": {
+    "node": "20.x"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
+    "@supabase/supabase-js": "^2.47.0",
+    "puppeteer-core": "^23.0.0"
+  }
+}
