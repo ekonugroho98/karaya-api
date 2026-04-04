@@ -6,6 +6,7 @@
 const { createClient } = require("@supabase/supabase-js");
 const puppeteer = require("puppeteer");
 const { scrapeUbs } = require("./lib/sources/ubs");
+const { scrapeLotus } = require("./lib/sources/lotus");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -138,6 +139,12 @@ async function main() {
   const ubsData = await scrapeUbs();
   console.log(`[ubs] ${ubsData.tanggal} — ${ubsData.emas_batangan.length} item`);
   await insertToSupabase("ubs", ubsData);
+
+  // Lotus (fetch + cheerio)
+  console.log("\n[lotus] Scraping lotusarchi.com...");
+  const lotusData = await scrapeLotus();
+  console.log(`[lotus] ${lotusData.tanggal} — ${lotusData.emas_batangan.length} item emas, ${lotusData.paper_gold.length} paper gold`);
+  await insertToSupabase("lotus", lotusData);
 
   console.log("\nSemua brand selesai.");
 }
