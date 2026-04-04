@@ -1,10 +1,11 @@
 /**
  * Dijalankan oleh GitHub Actions setiap 08:30 WIB
- * Scrape logammulia.com → insert ke Supabase
+ * Scrape semua brand → insert ke Supabase
  */
 
 const { createClient } = require("@supabase/supabase-js");
 const puppeteer = require("puppeteer");
+const { scrapeUbs } = require("./lib/sources/ubs");
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -22,7 +23,7 @@ function parseCurrency(str) {
   return cleaned ? parseInt(cleaned, 10) : 0;
 }
 
-async function scrape() {
+async function scrapeAntam() {
   const browser = await puppeteer.launch({
     headless: "new",
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-blink-features=AutomationControlled"],
@@ -40,10 +41,8 @@ async function scrape() {
       else req.continue();
     });
 
-    console.log("Mengakses logammulia.com...");
     await page.goto(SCRAPE_URL, { waitUntil: "networkidle2", timeout: 30000 });
     await page.waitForSelector("table", { timeout: 15000 });
-    console.log("Halaman berhasil dimuat");
 
     const raw = await page.evaluate(() => {
       const result = {
@@ -113,25 +112,34 @@ async function scrape() {
   }
 }
 
-async function main() {
-  console.log(`[${new Date().toISOString()}] Mulai scraping...`);
-
-  const data = await scrape();
-  console.log(`Scraped: ${data.tanggal} — ${data.emas_batangan.length} item emas batangan`);
-
+async function insertToSupabase(brand, data) {
   const { error } = await supabase.from("gold_prices").insert({
-    brand: "antam",
+    brand,
     tanggal: data.tanggal,
-    data: data,
+    data,
     scraped_at: data.updated_at,
   });
 
-  if (error) {
-    console.error("ERROR insert Supabase:", error.message);
-    process.exit(1);
-  }
+  if (error) throw new Error(`Insert ${brand} gagal: ${error.message}`);
+  console.log(`[${brand}] berhasil insert ke Supabase`);
+}
 
-  console.log("Berhasil insert ke Supabase");
+async function main() {
+  console.log(`[${new Date().toISOString()}] Mulai scraping semua brand...`);
+
+  // Antam (Puppeteer)
+  console.log("\n[antam] Scraping logammulia.com...");
+  const antamData = await scrapeAntam();
+  console.log(`[antam] ${antamData.tanggal} — ${antamData.emas_batangan.length} item`);
+  await insertToSupabase("antam", antamData);
+
+  // UBS (fetch + cheerio)
+  console.log("\n[ubs] Scraping ubslifestyle.com...");
+  const ubsData = await scrapeUbs();
+  console.log(`[ubs] ${ubsData.tanggal} — ${ubsData.emas_batangan.length} item`);
+  await insertToSupabase("ubs", ubsData);
+
+  console.log("\nSemua brand selesai.");
 }
 
 main().catch((err) => {
