@@ -127,8 +127,11 @@ async function scrapeAntamLocal() {
     const cats = Object.keys(raw).filter((k) => Array.isArray(raw[k]));
     cats.forEach((cat) => {
       raw[cat].forEach((item) => {
-        item.harga_dasar = parseCurrency(item.harga_dasar_raw);
+        item.harga_jual = parseCurrency(item.harga_dasar_raw);
         if (item.harga_pajak_raw) item.harga_pajak = parseCurrency(item.harga_pajak_raw);
+        item.harga_buyback = null;
+        delete item.harga_dasar_raw;
+        delete item.harga_pajak_raw;
       });
     });
 
@@ -184,8 +187,8 @@ async function main() {
     process.exit(1);
   }
   console.log(`  emas_batangan: ${eb.length} item`);
-  console.log(`  Harga 1gr   : Rp ${(eb.find(i => i.berat.includes("1 gr") || i.berat === "1 gr")?.harga_dasar ?? 0).toLocaleString("id-ID")}`);
-  console.log(`  Semua harga > 0: ${eb.every(i => i.harga_dasar > 0) ? "OK" : "GAGAL - ada harga 0"}`);
+  console.log(`  Harga 1gr   : Rp ${(eb.find(i => i.berat.includes("1 gr") || i.berat === "1 gr")?.harga_jual ?? 0).toLocaleString("id-ID")}`);
+  console.log(`  Semua harga > 0: ${eb.every(i => i.harga_jual > 0) ? "OK" : "GAGAL - ada harga 0"}`);
   console.log("\nTEST LULUS");
 }
 

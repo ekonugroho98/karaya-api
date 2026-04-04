@@ -1,5 +1,5 @@
 const { createClient } = require("@supabase/supabase-js");
-const { SOURCES } = require("../../lib/sources");
+const { BRANDS } = require("../../lib/sources");
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const brands = Object.keys(SOURCES);
+  const brands = BRANDS;
 
   const results = await Promise.all(
     brands.map(async (brand) => {

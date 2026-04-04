@@ -100,8 +100,11 @@ async function scrapeAntam() {
 
     Object.keys(raw).filter((k) => Array.isArray(raw[k])).forEach((cat) => {
       raw[cat].forEach((item) => {
-        item.harga_dasar = parseCurrency(item.harga_dasar_raw);
+        item.harga_jual = parseCurrency(item.harga_dasar_raw);
         if (item.harga_pajak_raw) item.harga_pajak = parseCurrency(item.harga_pajak_raw);
+        item.harga_buyback = null;
+        delete item.harga_dasar_raw;
+        delete item.harga_pajak_raw;
       });
     });
 
