@@ -129,34 +129,32 @@ async function insertToSupabase(brand, data) {
   console.log(`[${brand}] berhasil insert ke Supabase`);
 }
 
+async function runBrand(name, scrapeFn, logFn) {
+  try {
+    console.log(`\n[${name}] Scraping...`);
+    const data = await scrapeFn();
+    console.log(`[${name}] ${logFn(data)}`);
+    await insertToSupabase(name, data);
+    return true;
+  } catch (err) {
+    console.error(`[${name}] GAGAL: ${err.message}`);
+    return false;
+  }
+}
+
 async function main() {
   console.log(`[${new Date().toISOString()}] Mulai scraping semua brand...`);
 
-  // Antam (Puppeteer)
-  console.log("\n[antam] Scraping logammulia.com...");
-  const antamData = await scrapeAntam();
-  console.log(`[antam] ${antamData.tanggal} — ${antamData.emas_batangan.length} item`);
-  await insertToSupabase("antam", antamData);
+  const results = await Promise.allSettled([
+    runBrand("antam",   scrapeAntam,   d => `${d.tanggal} — ${d.emas_batangan.length} item`),
+    runBrand("ubs",     scrapeUbs,     d => `${d.tanggal} — ${d.emas_batangan.length} item`),
+    runBrand("lotus",   scrapeLotus,   d => `${d.tanggal} — ${d.emas_batangan.length} item emas, ${d.paper_gold.length} paper gold`),
+    runBrand("galeri24",scrapeGaleri24,d => `${d.tanggal} — ${d.emas_batangan.length} item`),
+  ]);
 
-  // UBS (fetch + cheerio)
-  console.log("\n[ubs] Scraping ubslifestyle.com...");
-  const ubsData = await scrapeUbs();
-  console.log(`[ubs] ${ubsData.tanggal} — ${ubsData.emas_batangan.length} item`);
-  await insertToSupabase("ubs", ubsData);
-
-  // Lotus (fetch + cheerio)
-  console.log("\n[lotus] Scraping lotusarchi.com...");
-  const lotusData = await scrapeLotus();
-  console.log(`[lotus] ${lotusData.tanggal} — ${lotusData.emas_batangan.length} item emas, ${lotusData.paper_gold.length} paper gold`);
-  await insertToSupabase("lotus", lotusData);
-
-  // Galeri 24 (fetch + __NUXT_DATA__ parse)
-  console.log("\n[galeri24] Scraping galeri24.co.id...");
-  const galeri24Data = await scrapeGaleri24();
-  console.log(`[galeri24] ${galeri24Data.tanggal} — ${galeri24Data.emas_batangan.length} item emas batangan`);
-  await insertToSupabase("galeri24", galeri24Data);
-
-  console.log("\nSemua brand selesai.");
+  const failed = results.filter(r => r.value === false).length;
+  console.log(`\nSelesai. ${4 - failed}/4 brand berhasil.`);
+  if (failed === 4) process.exit(1);
 }
 
 main().catch((err) => {
