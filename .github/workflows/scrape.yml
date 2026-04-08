@@ -2,7 +2,7 @@ name: Scrape Harga Emas
 
 on:
   schedule:
-    - cron: "30 1 * * *"   # 08:30 WIB (UTC+7)
+    - cron: "30 22 * * *"  # target 08:30 WIB — dikompensasi delay GitHub Actions ~3 jam
   workflow_dispatch:         # bisa trigger manual dari GitHub UI
 
 jobs:
