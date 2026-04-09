@@ -2,7 +2,8 @@ name: Scrape Harga Emas
 
 on:
   schedule:
-    - cron: "30 2 * * *"   # target 09:30 WIB — logammulia.com update sekitar 08:00-09:00 WIB
+    - cron: "30 2 * * *"   # run 1: target ~09:30 WIB (tunggu logammulia update)
+    - cron: "30 5 * * *"   # run 2: target ~13:30 WIB (refresh siang)
   workflow_dispatch:         # bisa trigger manual dari GitHub UI
 
 jobs:
